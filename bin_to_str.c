@@ -9,6 +9,7 @@ int main(int argc, char **argv)
 	char fileDest[255];
 	int reqWord = 0;
 	int reqDec = 0;
+	int reqSigned = 0;
 	FILE *fp, *wp;
 
 	if (argc < 2)
@@ -35,6 +36,17 @@ int main(int argc, char **argv)
 		if (reqDec == 0)
 		{
 			reqDec = 1;
+			break;
+		}
+	}
+
+	// Looking for -d: Format as DECIMAL
+	for (i = 0; i < argc; i++)
+	{
+		reqSigned = (int)strcmp("-s", argv[i]);
+		if (reqSigned == 0)
+		{
+			reqSigned = 1;
 			break;
 		}
 	}
@@ -66,9 +78,9 @@ int main(int argc, char **argv)
 		if (reqWord != 1)
 		{
 			if (reqDec != 1)
-				fprintf(wp, "%.2X\n", (c & 255));
+				fprintf(wp, "%.2X\n", c & 255);
 			else
-				fprintf(wp, "%d\n", (c & 255));
+				fprintf(wp, "%d\n", reqSigned != 1 ? c & 255 : c);
 		}
 		else
 		{
@@ -76,9 +88,9 @@ int main(int argc, char **argv)
 			wordVal = ((char)c * 256) + ((char)c1 & 255);
 
 			if (reqDec != 1)
-				fprintf(wp, "%.4X\n", (wordVal & 65535));
+				fprintf(wp, "%.4X\n", wordVal & 65535);
 			else
-				fprintf(wp, "%d\n", (wordVal & 65535));
+				fprintf(wp, "%d\n", reqSigned != 1 ? wordVal & 65535 : wordVal);
 		}
 	}
 
