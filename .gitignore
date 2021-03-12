@@ -1,0 +1,4 @@
+/.vscode
+/bin_to_str.dSYM
+*.bin
+*.txt
