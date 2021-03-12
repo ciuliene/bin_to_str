@@ -1,15 +1,17 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 int main(int argc, char **argv)
 {
 	int i, j;
 	int wordVal;
-	char c, c1;
+	char c0, c1;
 	char fileDest[255];
 	int reqWord = 0;
 	int reqDec = 0;
 	int reqSigned = 0;
+	int reqSkip = 0;
 	FILE *fp, *wp;
 
 	if (argc < 2)
@@ -21,8 +23,7 @@ int main(int argc, char **argv)
 	// Looking for -w: Format as WORDS
 	for (i = 0; i < argc; i++)
 	{
-		reqWord = (int)strcmp("-w", argv[i]);
-		if (reqWord == 0)
+		if ((int)strcmp("-w", argv[i]) == 0)
 		{
 			reqWord = 1;
 			break;
@@ -32,25 +33,34 @@ int main(int argc, char **argv)
 	// Looking for -d: Format as DECIMAL
 	for (i = 0; i < argc; i++)
 	{
-		reqDec = (int)strcmp("-d", argv[i]);
-		if (reqDec == 0)
+		if ((int)strcmp("-d", argv[i]) == 0)
 		{
 			reqDec = 1;
 			break;
 		}
 	}
 
-	// Looking for -d: Format as DECIMAL
+	// Looking for -s: Format as SIGNED
 	for (i = 0; i < argc; i++)
 	{
-		reqSigned = (int)strcmp("-s", argv[i]);
-		if (reqSigned == 0)
+		if ((int)strcmp("-s", argv[i]) == 0)
 		{
 			reqSigned = 1;
 			break;
 		}
 	}
 
+	// Looking for -sk: Skip the defined number of elements (always in BYTES)
+	for (i = 0; i < argc; i++)
+	{
+		if ((int)strcmp("-sk", argv[i]) == 0)
+		{
+			reqSkip = atoi(argv[i + 1]) + 1;
+			break;
+		}
+	}
+
+	// Get file name
 	for (j = strlen(argv[1]); j >= 0; j--)
 	{
 		if (argv[1][j] == '.')
@@ -74,23 +84,28 @@ int main(int argc, char **argv)
 
 	while (!feof(fp))
 	{
-		fscanf(fp, "%c", &c);
-		if (reqWord != 1)
+		fscanf(fp, "%c", &c0);
+		if (reqSkip)
+			reqSkip--;
+		if (!reqSkip)
 		{
-			if (reqDec != 1)
-				fprintf(wp, "%.2X\n", c & 255);
+			if (!reqWord)
+			{
+				if (!reqDec)
+					fprintf(wp, "%.2X\n", c0 & 255);
+				else
+					fprintf(wp, "%d\n", !reqSigned ? c0 & 255 : c0);
+			}
 			else
-				fprintf(wp, "%d\n", reqSigned != 1 ? c & 255 : c);
-		}
-		else
-		{
-			fscanf(fp, "%c", &c1);
-			wordVal = ((char)c * 256) + ((char)c1 & 255);
+			{
+				fscanf(fp, "%c", &c1);
+				wordVal = ((char)c0 * 256) + ((char)c1 & 255);
 
-			if (reqDec != 1)
-				fprintf(wp, "%.4X\n", wordVal & 65535);
-			else
-				fprintf(wp, "%d\n", reqSigned != 1 ? wordVal & 65535 : wordVal);
+				if (!reqDec)
+					fprintf(wp, "%.4X\n", wordVal & 65535);
+				else
+					fprintf(wp, "%d\n", !reqSigned ? wordVal & 65535 : wordVal);
+			}
 		}
 	}
 
