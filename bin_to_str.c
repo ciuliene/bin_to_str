@@ -1,61 +1,43 @@
 #include <stdio.h>
 #include <string.h>
-//#include <windows.h>
 
 int main(int argc, char **argv)
 {
 	int i, j;
-	int hnib, lnib;
-	char c;
+	int wordVal;
+	char c, c1;
 	char fileDest[255];
-	int newLine = 1;
 	int reqWord = 0;
+	int reqDec = 0;
 	FILE *fp, *wp;
 
 	if (argc < 2)
 	{
-		//MessageBox(NULL, "Not valid", "BinToStr", MB_ICONERROR);
 		printf("File not valid");
 		return -1;
 	}
 
+	// Looking for -w: Format as WORDS
 	for (i = 0; i < argc; i++)
 	{
 		reqWord = (int)strcmp("-w", argv[i]);
 		if (reqWord == 0)
 		{
-			newLine = 0;
 			reqWord = 1;
 			break;
 		}
 	}
 
-	fp = fopen(argv[1], "rb");
-	/* for (i = strlen(argv[1]); i >= 0; i--)
+	// Looking for -d: Format as DECIMAL
+	for (i = 0; i < argc; i++)
 	{
-		if (argv[1][i] == '\\')
+		reqDec = (int)strcmp("-d", argv[i]);
+		if (reqDec == 0)
 		{
+			reqDec = 1;
 			break;
 		}
 	}
-
-	printf("%s\n", argv[1]);
-
-	for (j = 0; j < i; j++)
-	{
-		fileDest[j] = argv[1][j];
-	}
-	//fileDest[j] = '\\';
-	fileDest[j] = 'r';
-	fileDest[j + 1] = 'e';
-	fileDest[j + 2] = 's';
-	fileDest[j + 3] = '.';
-	fileDest[j + 4] = 't';
-	fileDest[j + 5] = 'x';
-	fileDest[j + 6] = 't';
-	fileDest[j + 7] = '\0';
-
-	printf("%s", fileDest); */
 
 	for (j = strlen(argv[1]); j >= 0; j--)
 	{
@@ -75,46 +57,29 @@ int main(int argc, char **argv)
 	fileDest[i + 2] = 'x';
 	fileDest[i + 3] = 't';
 
+	fp = fopen(argv[1], "rb");
 	wp = fopen(fileDest, "w");
 
 	while (!feof(fp))
 	{
 		fscanf(fp, "%c", &c);
-		if (c < 0x10 && c >= 0x0)
+		if (reqWord != 1)
 		{
-			fprintf(wp, "0");
-		}
-
-		if (c < 0)
-		{
-			hnib = (c & 240) / 0x10;
-			lnib = (c & 15);
-			fprintf(wp, "%X", hnib);
-			if (newLine)
-			{
-				fprintf(wp, "%X\n", lnib);
-			}
+			if (reqDec != 1)
+				fprintf(wp, "%.2X\n", (c & 255));
 			else
-			{
-				fprintf(wp, "%X", lnib);
-			}
+				fprintf(wp, "%d\n", (c & 255));
 		}
 		else
 		{
-			if (newLine)
-			{
-				fprintf(wp, "%X\n", c);
-			}
-			else
-			{
-				fprintf(wp, "%X", c);
-			}
-		}
+			fscanf(fp, "%c", &c1);
+			wordVal = ((char)c * 256) + ((char)c1 & 255);
 
-		if (reqWord == 1)
-			newLine ^= 1;
-		else
-			newLine = 1;
+			if (reqDec != 1)
+				fprintf(wp, "%.4X\n", (wordVal & 65535));
+			else
+				fprintf(wp, "%d\n", (wordVal & 65535));
+		}
 	}
 
 	fclose(fp);
