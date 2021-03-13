@@ -78,6 +78,7 @@ int main(int argc, char **argv)
 	fileDest[i + 1] = 't';
 	fileDest[i + 2] = 'x';
 	fileDest[i + 3] = 't';
+	fileDest[i + 4] = '\0';
 
 	fp = fopen(argv[1], "rb");
 	wp = fopen(fileDest, "w");
